@@ -39,7 +39,7 @@ class Prism_UnrealEngine_Variables(object):
         self.appShortName = "UE4"
         self.appType = "3d"
         self.hasQtParent = False
-        self.sceneFormats = [".uasset"]
+        self.sceneFormats = [".uprismasset"]
         self.appSpecificFormats = self.sceneFormats
         self.outputFormats = [".uasset",".abc", ".obj", ".fbx"]
         self.appColor = [255, 255, 255]

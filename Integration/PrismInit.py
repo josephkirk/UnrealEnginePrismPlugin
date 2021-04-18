@@ -14,5 +14,5 @@ def prismInit():
 
     import PrismCore
 
-    pcore = PrismCore.PrismCore(app="PluginEmtpy")
+    pcore = PrismCore.PrismCore(app="UE4")
     return pcore

@@ -54,7 +54,7 @@ class Prism_UnrealEngine_Integration(object):
 
         if platform.system() == "Windows":
             self.examplePath = (
-                os.environ["userprofile"] + "\\Documents\\UnrealEngine\\2019"
+                os.environ["userprofile"] + "\\Documents\\UnrealEngine\\4.26"
             )
         elif platform.system() == "Linux":
             userName = (
@@ -62,7 +62,7 @@ class Prism_UnrealEngine_Integration(object):
                 if "SUDO_USER" in os.environ
                 else os.environ["USER"]
             )
-            self.examplePath = os.path.join("/home", userName, "UnrealEngine", "2019")
+            self.examplePath = os.path.join("/home", userName, "UnrealEngine", "4.26")
         elif platform.system() == "Darwin":
             userName = (
                 os.environ["SUDO_USER"]
@@ -70,7 +70,7 @@ class Prism_UnrealEngine_Integration(object):
                 else os.environ["USER"]
             )
             self.examplePath = (
-                "/Users/%s/Library/Preferences/Autodesk/UnrealEngine/2019" % userName
+                "/Users/%s/Library/Preferences/Autodesk/UnrealEngine/4.26" % userName
             )
 
     @err_catcher(name=__name__)
