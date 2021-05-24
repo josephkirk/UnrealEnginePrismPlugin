@@ -49,16 +49,18 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
     def __init__(self, core, plugin):
         self.core = core
         self.plugin = plugin
+        self.callbacks = []
+        # self.registerCallbacks()
+
+    @err_catcher(name=__name__)
+    def registerCallbacks(self):
+        self.callbacks.append(self.core.registerCallback("prismSettings_loadUI", self.prismSettings_loadUI))
+
 
     @err_catcher(name=__name__)
     def getAutobackPath(self, origin, tab):
         autobackpath = ""
-        if platform.system() == "Windows":
-            autobackpath = os.path.join(
-                os.getenv("USERPROFILE"), "Documents", "UnrealEngine"
-            )
-
-        fileStr = "UnrealEngine Scene File ("
+        fileStr = "Unreal Engine Scene File ("
         for i in self.sceneFormats:
             fileStr += "*%s " % i
 
@@ -67,9 +69,112 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         return autobackpath, fileStr
 
     @err_catcher(name=__name__)
+    def projectBrowser_loadUI(self, origin):
+        if self.core.appPlugin.pluginName == "Standalone":
+            psMenu = QMenu("Unreal Engine")
+            psAction = QAction("Connect", origin)
+            psAction.triggered.connect(lambda: self.connectToUnrealEngine(origin))
+            psMenu.addAction(psAction)
+            origin.menuTools.insertSeparator(origin.menuTools.actions()[-2])
+            origin.menuTools.insertMenu(origin.menuTools.actions()[-2], psMenu)
+
+    @err_catcher(name=__name__)
+    def resolvePath(self, filepath):
+        filepath = self.core.fixPath(filepath)
+        result = self.core.callback(name="sc_resolvePath", types=["custom", "prjManagers"], args=[self, filepath], **{"as_depot_file": True})
+        filepath = result if result else filepath
+
+    @err_catcher(name=__name__)
+    def browse(self, origin, getFile=False, windowTitle="Browse", fStr="All files (*)", uiEdit=None):
+        browse_dir = getattr(uiEdit, "text", lambda : "")()
+        if getFile:
+            selectedPath = QFileDialog.getOpenFileName(
+                    origin, windowTitle, browse_dir, fStr
+                )[0]
+        else:
+            selectedPath = QFolderDialog.getExistingDirectory(
+                    origin, windowTitle, browse_dir
+                )[0]
+
+        if getattr(uiEdit, "setText"):
+            uiEdit.setText(self.resolvePath(selectedPath))
+
+    @err_catcher(name=__name__)
+    def prismSettings_loadUI(self, origin, tab=None):
+
+        w_ue4edior = QWidget()
+        w_ue4edior.setLayout(QHBoxLayout())
+        l_ue4editor = QLabel("UE4 editor path")
+        origin.le_ue4editor = QLineEdit()
+        b_ue4editor = QPushButton("...")
+        w_ue4edior.layout().addWidget(l_ue4editor)
+        w_ue4edior.layout().addWidget(le_ue4editor)
+        w_ue4edior.layout().addWidget(b_ue4editor)
+
+        w_ue4project = QWidget()
+        w_ue4project.setLayout(QHBoxLayout())
+        l_ue4project = QLabel("UE4 project path")
+        origin.le_ue4project = QLineEdit()
+        b_ue4project = QPushButton("...")
+        w_ue4project.layout().addWidget(l_ue4project)
+        w_ue4project.layout().addWidget(origin.le_ue4project)
+        w_ue4project.layout().addWidget(b_ue4project)
+        
+        # tab.layout().addWidget(w_ue4edior)
+        tab.layout().addWidget(w_ue4project)
+
+        b_ue4editor.clicked.connect(lambda : self.browse(origin, True, "Select UE4-Editor.exe", "Executable (*.exe)", origin.le_ue4editor))
+        b_ue4project.clicked.connect(lambda : self.browse(origin, True, "Select Uproject file", "Uproject (*.uproject)", origin.le_ue4project))
+
+        return ""
+
+    @err_catcher(name=__name__)
+    def prismSettings_savePrjSettings(self, origin, settings):
+        if "unrealengine" not in settings:
+            settings["unrealengine"] = {}
+
+        settings["unrealengine"]["editor"] = origin.l_ue4editor.text()
+        settings["unrealengine"]["uproject"] = origin.le_ue4project.text()
+
+    @err_catcher(name=__name__)
+    def prismSettings_loadPrjSettings(self, origin, settings):
+        if "unrealengine" in settings:
+            if "uproject" in settings["unrealengine"]:
+                origin.l_ue4editor.setText(settings["unrealengine"]["editor"])
+                origin.le_ue4project.setText(settings["unrealengine"]["uproject"])
+
+    @err_catcher(name=__name__)
+    def customizeExecutable(self, origin, appPath, filepath):
+        # self.connectToUnrealEngine(origin, filepath=filepath)
+        fileStarted = False
+        # if self.core.getConfig("nuke", "usenukex"):
+        #     if appPath == "":
+        #         if not hasattr(self, "nukePath"):
+        #             self.getNukePath(origin)
+
+        #         if self.nukePath is not None and os.path.exists(self.nukePath):
+        #             appPath = self.nukePath
+        #         else:
+        #             QMessageBox.warning(
+        #                 self.core.messageParent,
+        #                 "Warning",
+        #                 "Nuke executable doesn't exist:\n\n%s" % self.nukePath,
+        #             )
+
+        #     if appPath is not None and appPath != "":
+        #         subprocess.Popen([appPath, "--nukex", self.core.fixPath(filepath)])
+        #         fileStarted = True
+
+        return False
+
+    @err_catcher(name=__name__)
     def copySceneFile(self, origin, origFile, targetPath, mode="copy"):
         pass
 
     @err_catcher(name=__name__)
     def onProjectCreated(self, origin, projectPath, projectName):
+        pass
+
+    @err_catcher(name=__name__)
+    def connectToUnrealEngine(self, origin, filepath=""):
         pass

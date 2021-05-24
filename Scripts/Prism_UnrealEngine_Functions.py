@@ -33,6 +33,8 @@
 
 import os
 import sys
+import platform
+import subprocess
 
 try:
     from PySide2.QtCore import *
@@ -42,6 +44,7 @@ except:
     from PySide.QtCore import *
     from PySide.QtGui import *
 
+
 from PrismUtils.Decorators import err_catcher as err_catcher
 
 
@@ -49,6 +52,7 @@ class Prism_UnrealEngine_Functions(object):
     def __init__(self, core, plugin):
         self.core = core
         self.plugin = plugin
+        self.win = platform.system() == "Windows"
 
     @err_catcher(name=__name__)
     def startup(self, origin):
@@ -68,7 +72,15 @@ class Prism_UnrealEngine_Functions(object):
                 origin.messageParent.windowFlags() ^ Qt.WindowStaysOnTopHint
             )
 
-        origin.startasThread()
+        # origin.startasThread()
+
+        return False
+
+    # @err_catcher(name=__name__)
+    # def prismSettings_loadUI(self, settings, tab):
+    #     # get executable path
+    #     tab.setLayout(QVBoxLayout())
+    #     return ""
 
     @err_catcher(name=__name__)
     def autosaveEnabled(self, origin):
@@ -134,7 +146,7 @@ class Prism_UnrealEngine_Functions(object):
 
     @err_catcher(name=__name__)
     def getFPS(self, origin):
-        return 24
+        return 60
 
     @err_catcher(name=__name__)
     def setFPS(self, origin, fps):

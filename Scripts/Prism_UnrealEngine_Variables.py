@@ -45,5 +45,6 @@ class Prism_UnrealEngine_Variables(object):
         self.appColor = [255, 255, 255]
         self.appVersionPresets = ["4.25", "4.26"]
         self.renderPasses = []
-        self.preferredUnit = "centimeter"
+        self.hasFrameRange = False
+        self.canOverrideExecuteable = False
         self.platforms = ["Windows", "Linux", "Darwin"]

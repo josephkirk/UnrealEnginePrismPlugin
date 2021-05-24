@@ -1,0 +1,4 @@
+[submodule "external_modules/UnrealAPI"]
+	path = external_modules/UnrealAPI
+	url = https://github.com/josephkirk/UnrealApi
+	branch = py2
