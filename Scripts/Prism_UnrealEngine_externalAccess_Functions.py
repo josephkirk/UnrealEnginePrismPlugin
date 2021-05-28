@@ -108,7 +108,7 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         origin.le_ue4editor = QLineEdit()
         b_ue4editor = QPushButton("...")
         w_ue4edior.layout().addWidget(l_ue4editor)
-        w_ue4edior.layout().addWidget(le_ue4editor)
+        w_ue4edior.layout().addWidget(origin.le_ue4editor)
         w_ue4edior.layout().addWidget(b_ue4editor)
 
         w_ue4project = QWidget()
@@ -133,15 +133,16 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         if "unrealengine" not in settings:
             settings["unrealengine"] = {}
 
-        settings["unrealengine"]["editor"] = origin.l_ue4editor.text()
+        settings["unrealengine"]["editor"] = origin.le_ue4editor.text()
         settings["unrealengine"]["uproject"] = origin.le_ue4project.text()
 
     @err_catcher(name=__name__)
     def prismSettings_loadPrjSettings(self, origin, settings):
         if "unrealengine" in settings:
             if "uproject" in settings["unrealengine"]:
-                origin.l_ue4editor.setText(settings["unrealengine"]["editor"])
                 origin.le_ue4project.setText(settings["unrealengine"]["uproject"])
+            if "editor" in settings["unrealengine"]:
+                origin.le_ue4editor.setText(settings["unrealengine"]["editor"])
 
     @err_catcher(name=__name__)
     def customizeExecutable(self, origin, appPath, filepath):
