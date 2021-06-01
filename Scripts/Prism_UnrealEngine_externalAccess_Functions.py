@@ -31,6 +31,7 @@
 # along with Prism.  If not, see <https://www.gnu.org/licenses/>.
 
 
+from asyncio.log import logger
 import os
 import platform
 
@@ -51,11 +52,28 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         self.plugin = plugin
         self.callbacks = []
         # self.registerCallbacks()
+        self._editorpath = ""
+        self._projectpath = ""
+
+    @property
+    def editor(self):
+        return self._editorpath
+
+    @property
+    def project(self):
+        return self._projectpath
+
+    @err_catcher(name=__name__)
+    def setEditorPath(self, value):
+        self._editorpath = value
+
+    @err_catcher(name=__name__)
+    def setProjectPath(self, value):
+        self._projectpath = value
 
     @err_catcher(name=__name__)
     def registerCallbacks(self):
         self.callbacks.append(self.core.registerCallback("prismSettings_loadUI", self.prismSettings_loadUI))
-
 
     @err_catcher(name=__name__)
     def getAutobackPath(self, origin, tab):
@@ -85,7 +103,7 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         filepath = result if result else filepath
 
     @err_catcher(name=__name__)
-    def browse(self, origin, getFile=False, windowTitle="Browse", fStr="All files (*)", uiEdit=None):
+    def browse(self, origin, getFile=False, windowTitle="Browse", fStr="All files (*)", uiEdit=None, subscribe_callable=None):
         browse_dir = getattr(uiEdit, "text", lambda : "")()
         if getFile:
             selectedPath = QFileDialog.getOpenFileName(
@@ -98,6 +116,12 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
 
         if getattr(uiEdit, "setText"):
             uiEdit.setText(self.resolvePath(selectedPath))
+        if subscribe_callable:
+            try:
+                subscribe_callable(self.resolvePath(selectedPath))
+            except Exception as why:
+                logger.error(why)
+
 
     @err_catcher(name=__name__)
     def prismSettings_loadUI(self, origin, tab=None):
@@ -123,8 +147,11 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         # tab.layout().addWidget(w_ue4edior)
         tab.layout().addWidget(w_ue4project)
 
-        b_ue4editor.clicked.connect(lambda : self.browse(origin, True, "Select UE4-Editor.exe", "Executable (*.exe)", origin.le_ue4editor))
-        b_ue4project.clicked.connect(lambda : self.browse(origin, True, "Select Uproject file", "Uproject (*.uproject)", origin.le_ue4project))
+        origin.le_ue4editor.editingFinished.connect(self.setEditorPath)
+        origin.le_ue4project.editingFinished.connect(self.setProjectPath)
+
+        b_ue4editor.clicked.connect(lambda : self.browse(origin, True, "Select UE4-Editor.exe", "Executable (*.exe)", origin.le_ue4editor, self.setEditorPath))
+        b_ue4project.clicked.connect(lambda : self.browse(origin, True, "Select Uproject file", "Uproject (*.uproject)", origin.le_ue4project, self.setProjectPath))
 
         return ""
 
@@ -132,9 +159,10 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
     def prismSettings_savePrjSettings(self, origin, settings):
         if "unrealengine" not in settings:
             settings["unrealengine"] = {}
-
-        settings["unrealengine"]["editor"] = origin.le_ue4editor.text()
-        settings["unrealengine"]["uproject"] = origin.le_ue4project.text()
+        if hasattr(origin, "le_ue4editor"):
+            settings["unrealengine"]["editor"] = self.editor
+        if hasattr(origin, "le_ue4project"):
+            settings["unrealengine"]["uproject"] = self.project
 
     @err_catcher(name=__name__)
     def prismSettings_loadPrjSettings(self, origin, settings):
