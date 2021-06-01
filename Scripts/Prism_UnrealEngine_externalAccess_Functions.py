@@ -130,6 +130,7 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         w_ue4edior.setLayout(QHBoxLayout())
         l_ue4editor = QLabel("UE4 editor path")
         origin.le_ue4editor = QLineEdit()
+        origin.le_ue4editor.setText(self.editor)
         b_ue4editor = QPushButton("...")
         w_ue4edior.layout().addWidget(l_ue4editor)
         w_ue4edior.layout().addWidget(origin.le_ue4editor)
@@ -139,6 +140,7 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
         w_ue4project.setLayout(QHBoxLayout())
         l_ue4project = QLabel("UE4 project path")
         origin.le_ue4project = QLineEdit()
+        origin.le_ue4project.setText(self.project)
         b_ue4project = QPushButton("...")
         w_ue4project.layout().addWidget(l_ue4project)
         w_ue4project.layout().addWidget(origin.le_ue4project)
@@ -168,9 +170,9 @@ class Prism_UnrealEngine_externalAccess_Functions(object):
     def prismSettings_loadPrjSettings(self, origin, settings):
         if "unrealengine" in settings:
             if "uproject" in settings["unrealengine"]:
-                origin.le_ue4project.setText(settings["unrealengine"]["uproject"])
+                self.setProjectPath(settings["unrealengine"]["uproject"])
             if "editor" in settings["unrealengine"]:
-                origin.le_ue4editor.setText(settings["unrealengine"]["editor"])
+                self.setEditorPath(settings["unrealengine"]["editor"])
 
     @err_catcher(name=__name__)
     def customizeExecutable(self, origin, appPath, filepath):
